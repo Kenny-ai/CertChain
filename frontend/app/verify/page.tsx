@@ -46,7 +46,7 @@ export default function Verify() {
                 resourceType
             );
             console.log({ certificateHash, certificateData });
-            if (resource.data.certificate_data === certificateData) {
+            if ((resource.data as any).certificate_data === certificateData) {
                 const { data: certificateData, error } = await supabase
                     .from("certificates")
                     .select()
@@ -63,7 +63,8 @@ export default function Verify() {
 
                 if (certificateData) {
                     setCertificate(certificateData[0]);
-                    const matric_number = certificateData[0].matric_numbers[0];
+                    const matric_number =
+                        certificateData[0].matric_numbers![0];
 
                     const { data: userData, error: userDataError } =
                         await supabase
