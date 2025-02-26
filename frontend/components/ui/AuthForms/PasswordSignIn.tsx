@@ -62,7 +62,7 @@ export default function PasswordSignIn({
                         />
                     </div>
                     <Button variant="default" type="submit" className="mt-1">
-                        Sign in
+                        {`${isSubmitting ? `Loading...` : `Sign in`} `}
                     </Button>
                 </div>
             </form>

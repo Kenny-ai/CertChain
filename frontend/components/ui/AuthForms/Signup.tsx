@@ -10,6 +10,7 @@ import { useState } from "react";
 import Input from "../input";
 import { Checkbox } from "../checkbox";
 import { Label } from "../label";
+import LoadingDots from "../LoadingDots";
 
 // Define prop type with allowEmail boolean
 interface SignUpProps {
@@ -27,6 +28,8 @@ export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
         setIsSubmitting(false);
     };
 
+    const [institution, setInstitution] = useState(false);
+
     return (
         <div className="">
             <form
@@ -35,8 +38,24 @@ export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
                 onSubmit={(e) => handleSubmit(e)}
             >
                 <div className="grid gap-2">
+                    <div className="inline-flex text-lg flex-row-reverse gap-2 items-center mr-auto mb-8">
+                        <label htmlFor="organization">
+                            Are you an educational institution?
+                        </label>
+
+                        <Checkbox
+                            onCheckedChange={(checked: boolean) =>
+                                setInstitution(checked)
+                            }
+                            className="size-5"
+                            id="organization"
+                            name="organization"
+                        ></Checkbox>
+                    </div>
                     <div className="grid gap-1">
-                        <label htmlFor="email">Email</label>
+                        <label htmlFor="email">
+                            {`${institution ? `Institution ` : ``}`} Email
+                        </label>
                         <input
                             className={
                                 "flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -60,8 +79,12 @@ export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
                             name="password"
                             autoComplete="current-password"
                         />
-                        <div>
-                            <label htmlFor="full_name">Full Name</label>
+                        <div className="grid gap-1">
+                            <label htmlFor="full_name">
+                                {" "}
+                                {`${institution ? `Institution ` : `Full `}`}{" "}
+                                Name
+                            </label>
                             <input
                                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                 id="full_name"
@@ -73,20 +96,27 @@ export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
                                 autoCorrect="off"
                             />
                         </div>
-                        <div className="inline-flex flex-row-reverse gap-2 items-center mr-auto my-2">
-                            <label htmlFor="organization">
-                                Do you represent an organization?
-                            </label>
 
-                            <Checkbox
-                                className="size-5"
-                                id="organization"
-                                name="organization"
-                            ></Checkbox>
-                        </div>
+                        {!institution && (
+                            <div className="grid gap-1">
+                                <label htmlFor="matric_number">
+                                    Matric Number
+                                </label>
+                                <input
+                                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    id="matric_number"
+                                    placeholder="Matric Number"
+                                    type="text"
+                                    name="matric_number"
+                                    autoCapitalize="none"
+                                    autoComplete="matric_number"
+                                    autoCorrect="off"
+                                />
+                            </div>
+                        )}
                     </div>
                     <Button variant="default" type="submit" className="mt-1">
-                        Sign up
+                        {`${isSubmitting ? `Loading...` : `Sign up`} `}
                     </Button>
                 </div>
             </form>

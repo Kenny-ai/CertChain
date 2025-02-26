@@ -5,7 +5,5 @@ version = "0.0.0"
 [addresses]
 hello_blockchain = "_"
 
-[dependencies.AptosFramework]
-git= "https://github.com/aptos-labs/aptos-core.git"
-subdir = "aptos-move/framework/aptos-framework"
-rev= "framework-testnet"
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-framework.git", subdir = "aptos-framework", rev = "testnet" }

@@ -50,7 +50,7 @@ const CertifcatesInfo = ({
                 const { data, error } = await supabase
                     .from("certificates")
                     .select("*")
-                    .eq("issuing_organization_id", user.id);
+                    .eq("issuing_institution_id", user.id);
 
                 if (error) {
                     console.error(
@@ -84,6 +84,7 @@ const CertifcatesInfo = ({
                                 <TableRow>
                                     <TableHead>Title</TableHead>
                                     <TableHead>Issue Date</TableHead>
+                                    <TableHead>Transaction ID</TableHead>
                                     <TableHead>Transaction URL</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -99,8 +100,28 @@ const CertifcatesInfo = ({
                                             ).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell>
-                                            <Link href={certificate.txn_id ? `https://explorer.aptoslabs.com/txn/${certificate.txn_id}?network=testnet` : "#"} className="underline" target={certificate.txn_id ? "_blank" : ""} rel="noopener, noreferrer">
-                                                {certificate.txn_id ? "Visit Link" : "Link Not Available"}
+                                            {certificate.user_ids?.map(
+                                                (user) => <>{user}</>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Link
+                                                href={
+                                                    certificate.txn_id
+                                                        ? `https://explorer.aptoslabs.com/txn/${certificate.txn_id}?network=testnet`
+                                                        : "#"
+                                                }
+                                                className="underline"
+                                                target={
+                                                    certificate.txn_id
+                                                        ? "_blank"
+                                                        : ""
+                                                }
+                                                rel="noopener, noreferrer"
+                                            >
+                                                {certificate.txn_id
+                                                    ? "Visit Link"
+                                                    : "Link Not Available"}
                                             </Link>
                                         </TableCell>
                                     </TableRow>

@@ -56,7 +56,7 @@ const CertifcatesOwned = ({
     const supabase = createClient();
     interface CertificateWithIssuingOrganization
         extends Tables<"certificates"> {
-        issuing_organization?: Tables<"users">;
+        issuing_institution?: Tables<"users">;
     }
     const [certificates, setCertificates] = React.useState<
         CertificateWithIssuingOrganization[] | null
@@ -75,14 +75,26 @@ const CertifcatesOwned = ({
         <Document title={`${user.id}_${certificate.title}}`}>
             <Page
                 style={{
-                    flexDirection: "row",
-                    backgroundColor: "#191a1a",
+                    flexDirection: "column",
+                    backgroundColor: "#191a1a"
                 }}
                 size={{
                     width: 1920 / 3,
                     height: 1000 / 3
                 }}
             >
+                <Text
+                    style={{
+                        color: "#0ee1be",
+                        textAlign: "right",
+                        textDecoration: "underline",
+                        marginTop: 16,
+                        marginRight: 10,
+                        fontSize: 10
+                    }}
+                >
+                    {`${certificate.certificate_hash}`}
+                </Text>
                 <View
                     style={{
                         margin: 24,
@@ -117,7 +129,7 @@ const CertifcatesOwned = ({
                             fontWeight: 800
                         }}
                     >
-                        {user.id}
+                        {user.user_metadata.full_name}
                     </Text>
                     <Text
                         style={{
@@ -143,11 +155,21 @@ const CertifcatesOwned = ({
                         style={{
                             color: "#ffffff",
                             textAlign: "center",
+                            marginTop: 4,
+                            fontSize: 16
+                        }}
+                    >
+                        {`(${certificate.graduation_year})`}
+                    </Text>
+                    <Text
+                        style={{
+                            color: "#ffffff",
+                            textAlign: "center",
                             marginTop: 16,
                             fontSize: 12
                         }}
                     >
-                        Issued By: {certificate.issuing_organization?.id}
+                        Issued By: {certificate.issuing_institution_name}
                     </Text>
                     <Text
                         style={{
@@ -222,7 +244,7 @@ const CertifcatesOwned = ({
                         certificatesData
                             .map(
                                 (certificate) =>
-                                    certificate.issuing_organization_id
+                                    certificate.issuing_institution_name
                             )
                             .filter(Boolean)
                     )
@@ -248,10 +270,10 @@ const CertifcatesOwned = ({
                     const certificatesWithOrganizations = certificatesData.map(
                         (certificate) => ({
                             ...certificate,
-                            issuing_organization: organizationsData.find(
+                            issuing_institution: organizationsData.find(
                                 (org) =>
                                     org.id ===
-                                    certificate.issuing_organization_id
+                                    certificate.issuing_institution_name
                             )
                         })
                     );
@@ -296,9 +318,9 @@ const CertifcatesOwned = ({
                                             {certificate.title}
                                         </TableCell>
                                         <TableCell>
-                                            {certificate.issuing_organization &&
-                                                certificate.issuing_organization
-                                                    .id}
+                                            {
+                                                certificate.issuing_institution_name
+                                            }
                                         </TableCell>
                                         <TableCell>
                                             {new Date(
@@ -387,7 +409,14 @@ const CertifcatesOwned = ({
                                                             );
                                                         }
                                                         return (
-                                                            <Link href={url ?? "#"} type="download" target="_blank" rel={"noopener"}>
+                                                            <Link
+                                                                href={
+                                                                    url ?? "#"
+                                                                }
+                                                                type="download"
+                                                                target="_blank"
+                                                                rel={"noopener"}
+                                                            >
                                                                 {loading
                                                                     ? "Loading..."
                                                                     : "Download"}

@@ -523,6 +523,31 @@ const MultipleSelector = forwardRef<MultipleSelectorRef, MultipleSelectorProps>(
                                                                             newOptions
                                                                         );
                                                                     }}
+                                                                    onClick={() => {
+                                                                        if (
+                                                                            selected.length >=
+                                                                            maxSelected
+                                                                        ) {
+                                                                            onMaxSelected?.(
+                                                                                selected.length
+                                                                            );
+                                                                            return;
+                                                                        }
+                                                                        setInputValue(
+                                                                            ""
+                                                                        );
+                                                                        const newOptions =
+                                                                            [
+                                                                                ...selected,
+                                                                                option
+                                                                            ];
+                                                                        setSelected(
+                                                                            newOptions
+                                                                        );
+                                                                        onChange?.(
+                                                                            newOptions
+                                                                        );
+                                                                    }}
                                                                     className={cn(
                                                                         "cursor-pointer",
                                                                         option.disable &&

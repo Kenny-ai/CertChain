@@ -4,6 +4,7 @@ import CreateCertificate from "@/components/ui/AccountForms/CreateCertificate";
 import EmailForm from "@/components/ui/AccountForms/EmailForm";
 import NameForm from "@/components/ui/AccountForms/NameForm";
 import WalletInfo from "@/components/ui/AccountForms/WalletInfo";
+import SuccessModal from "@/components/ui/Card/SuccessModal";
 import AptosProvider from "@/utils/providers/aptosProvider";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -15,6 +16,16 @@ export default async function Account() {
     const {
         data: { user }
     } = await supabase.auth.getUser();
+    console.log(user);
+
+    // const user = {
+    //     user_metadata: {
+    //         // organization: "University of Ibadan",
+    //         organization: "University of Ibadan",
+    //         avatar_url: "",
+    //         full_name: "Kenny Soyoye"
+    //     }
+    // };
 
     // const { data: userDetails } = await supabase
     //     .from("users")
@@ -23,7 +34,7 @@ export default async function Account() {
     // const { data: userCertificates } = await supabase
     //     .from("certificates")
     //     .select("*")
-    //     .eq("issuing_organization_id", user?.id ?? "")
+    //     .eq("issuing_institution_id", user?.id ?? "")
     //     .single();
 
     if (!user) {
@@ -32,10 +43,11 @@ export default async function Account() {
 
     return (
         <section className="mb-32 ">
+            {/* <SuccessModal /> */}
             <div className="py-8 flex lg:justify-center lg:items-center justify-start items-start sm:pt-24 px-8">
                 <div className="max-w-4xl mb-2">
                     <h1 className="lg:text-6xl w-fit font-extrabold text-5xl">
-                        Your Account
+                        {`Hello ${user.user_metadata.full_name}`}
                     </h1>
                     <p className="max-w-2xl lg:text-center w-full opacity-80 mt-2 lg:text-xl text-lg">
                         View your account settings.
@@ -50,7 +62,7 @@ export default async function Account() {
                         <WalletInfo user={user} />
                     </section>
                     {user.user_metadata.organization && (
-                        <div className=" max-w-6xl w-full mt-4 px-8">
+                        <div className="w-full mt-4 px-8">
                             <section className="w-full flex lg:flex-row-reverse flex-col-reverse gap-16 items-start justify-start">
                                 <CertifcatesInfo user={user} />
                                 <CreateCertificate user={user} />
@@ -62,7 +74,6 @@ export default async function Account() {
                             <section className="w-full">
                                 <CertifcatesOwned user={user} />
                             </section>
-                
                         </div>
                     )}
                 </div>

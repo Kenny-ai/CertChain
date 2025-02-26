@@ -3,9 +3,9 @@ name = "CredChain"
 version = "0.0.0"
 
 [addresses]
-CredChain = "_"
+# CredChain = "_"
+# CredChain = "0x4f59186d8188af5329c32d1cf0808659240563e4261f012a3e3aad6320bb9991"
+CredChain = "0x885a7d4b5b123ff86e3a853439bb11b1ac888b1ee7b403dc845c8bf62e6dd174"
 
-[dependencies.AptosFramework]
-git= "https://github.com/aptos-labs/aptos-core.git"
-subdir = "aptos-move/framework/aptos-framework"
-rev= "framework-testnet"
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-framework.git", subdir = "aptos-framework", rev = "testnet" }

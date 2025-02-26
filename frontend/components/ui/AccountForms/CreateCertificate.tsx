@@ -29,6 +29,8 @@ import { sha256 } from "js-sha256";
 import { InputTags } from "../multiple-inputs";
 import { MultiSelect } from "../multi-select";
 import MultipleSelector, { Option } from "../multiple-selector";
+import { getStatusRedirect } from "@/utils/helpers";
+import { ToastContainer, ToastContentProps, toast } from "react-toastify";
 
 interface CustomOption extends Option {
     id: string;
@@ -44,7 +46,8 @@ const certificateFormSchema = z.object({
     user_ids: z
         .array(z.custom<CustomOption>())
         .min(1, { message: "Please add at least one user" }),
-    issuing_organization_id: z.string()
+    issuing_institution_id: z.string(),
+    graduation_year: z.string()
 });
 
 interface CreateCertificateProps extends React.ComponentPropsWithRef<"div"> {
@@ -63,7 +66,8 @@ export default function CreateCertificate({
             certificate_hash: "",
             metadata: null,
             user_ids: [],
-            issuing_organization_id: user.id
+            issuing_institution_id: user.id,
+            graduation_year: ""
         }
     });
     function generateCertificate(
@@ -149,7 +153,7 @@ export default function CreateCertificate({
                 sender: account?.address,
                 data: {
                     function:
-                        "0x2554e56615b6ec17254f34e6e51ba1e6e52579437d9cc8eed61053b0dbabdf86::issue_certificate::issue_certificate",
+                        "0x885a7d4b5b123ff86e3a853439bb11b1ac888b1ee7b403dc845c8bf62e6dd174::issue_certificate::issue_certificate",
                     functionArguments: [
                         `Hashed certificate: ${hashedCertificate}`
                     ]
@@ -167,6 +171,10 @@ export default function CreateCertificate({
     };
 
     async function onSubmit(values: z.infer<typeof certificateFormSchema>) {
+        console.log(
+            `A certificate of ${values.title} has been successfully issued to ${values.user_ids[0].label.split("|")[1]}, ${values.user_ids[0].value}`
+        );
+
         try {
             setLoading(true);
             const certificateData = generateCertificate(form.getValues());
@@ -177,14 +185,39 @@ export default function CreateCertificate({
                         .from("certificates")
                         .insert({
                             ...values,
+                            id: String(crypto.randomUUID()),
                             title: values.title,
                             user_ids: values.user_ids.map((user) => user.id),
+                            matric_numbers: values.user_ids.map(
+                                (user) => user.value
+                            ),
                             certificate_hash: certificateHash,
-                            txn_id: txn.hash
+                            txn_id: txn.hash,
+                            graduation_year: values.graduation_year,
+                            issuing_institution_name:
+                                user.user_metadata.full_name
                         });
                     if (error) {
                         throw error;
                     }
+
+                    toast.success(
+                        `A certificate of ${values.title} has been successfully issued to ${values.user_ids[0].label.split("|")[1]}, ${values.user_ids[0].value}`,
+                        {
+                            className: "w-[400px] border border-purple-600/40",
+                            theme: "dark"
+                        }
+                    );
+
+                    console.log({
+                        id: crypto.randomUUID(),
+                        title: values.title,
+                        user_ids: values.user_ids.map((user) => user.id),
+                        certificate_hash: certificateHash,
+                        txn_id: txn.hash
+                    });
+
+                    form.reset();
                 }
             );
         } catch (error) {
@@ -208,11 +241,14 @@ export default function CreateCertificate({
         signMessageAndVerify
     } = useWallet();
 
+    // const [successModalOpen, setSuccessModalOpen] = useState(false);
+
     return (
         <div
-            className="flex lg:justify-center lg:items-center items-start justify-start gap-16 w-full"
+            className="flex lg:justify-center lg:items-center items-start justify-start gap-16 w-1/2"
             {...otherProps}
         >
+            <ToastContainer />
             {connected && (
                 <div className="flex flex-col gap-4 lg:justify-center lg:items-center justify-start items-start w-full">
                     <h1 className="font-heading text-3xl font-bold inline-flex items-start justify-start flex-col">
@@ -233,7 +269,7 @@ export default function CreateCertificate({
                                         </FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Participated in XYZ"
+                                                placeholder="Certificate Title..."
                                                 {...field}
                                             />
                                         </FormControl>
@@ -254,7 +290,7 @@ export default function CreateCertificate({
                                         }}
                                     >
                                         <FormLabel className="lg:text-lg text-base">
-                                            Certificants' CredChain IDs
+                                            Student Name and Matric number
                                         </FormLabel>
                                         <FormControl>
                                             {/* {
@@ -283,30 +319,61 @@ export default function CreateCertificate({
                                                 options={
                                                     users?.map((user) => {
                                                         return {
-                                                            label:
-                                                                user.full_name ??
-                                                                "",
+                                                            label: `${user.matric_number} | ${user.full_name}`,
                                                             value:
-                                                                user.full_name ??
+                                                                user.matric_number ??
                                                                 "",
                                                             id: user.id
                                                         };
                                                     }) ?? []
                                                 }
-                                                // emptyIndicator={users?.map(
-                                                //     (user) => {
-                                                //         return (
-                                                //             <p className="text-sm text-foreground/80">
-                                                //                 {user.full_name}
-                                                //             </p>
-                                                //         );
-                                                //     }
-                                                // )}
                                                 triggerSearchOnFocus={true}
                                                 loadingIndicator={
                                                     <p>Loading...</p>
                                                 }
-                                                // disabled={loading}
+                                                {...field}
+                                            />
+                                            {/* <div className="">
+                                                <MultipleSelector
+                                                options={options}
+                                                value={selectedOptions}
+                                                onChange={handleOptionsChange}
+                                                placeholder="Select options..."
+                                                groupBy="group" // Enable grouping
+                                                creatable={true} // Enable creating new options
+                                                onMaxSelected={(max) =>
+                                                    alert(
+                                                        `You can only select up to ${max} options.`
+                                                    )
+                                                }
+                                                maxSelected={3}
+                                                />
+                                            <p>
+                                                Selected Values:{" "}
+                                                {selectedOptions
+                                                    .map(
+                                                        (option) => option.value
+                                                    )
+                                                    .join(", ")}
+                                            </p>
+                                            </div> */}
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="graduation_year"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="lg:text-lg text-base">
+                                            Graduation Year
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Enter student graduation year"
                                                 {...field}
                                             />
                                         </FormControl>

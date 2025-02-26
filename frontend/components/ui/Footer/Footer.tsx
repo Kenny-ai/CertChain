@@ -100,7 +100,7 @@ export default function Footer() {
             <div className="flex flex-col items-center justify-between py-12 space-y-4 md:flex-row 900">
                 <div>
                     <span>
-                        &copy; {new Date().getFullYear()} CredChain, Inc. All
+                        &copy; {new Date().getFullYear()} CertChain, Inc. All
                         rights reserved.
                     </span>
                 </div>

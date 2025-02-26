@@ -3,7 +3,7 @@ module CredChain::issue_certificate {
     use std::error;
     use std::signer;
     use std::string;
-    use aptos_framework::event;
+    // use aptos_framework::event;
 
     // :!:>resource
     struct CertificateHolder has key {
@@ -35,10 +35,10 @@ module CredChain::issue_certificate {
             let certificate_holder = borrow_global_mut<CertificateHolder>(account_addr);
             certificate_holder.certificate_data = certificate_data;
 
-            /// event::emit(CertificateIssued {
-            ///     account: account_addr,
-            ///     certificate_data: certificate_data,
-            /// });
+            // event::emit(CertificateIssued {
+            //     account: account_addr,
+            //     certificate_data: certificate_data,
+            // });
         }
     }
 

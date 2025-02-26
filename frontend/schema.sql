@@ -5,7 +5,7 @@
 create table users (
   -- UUID from auth.users
   id uuid references auth.users not null primary key,
-  full_name text,
+  full_name text not null,
   avatar_url text,
   -- The customer's billing address, stored in JSON format.
   billing_address jsonb,
@@ -51,7 +51,7 @@ create table certificates (
     id uuid primary key, -- Unique identifier for this record
     user_id uuid references auth.users not null, -- The recipient of the certificate
     certificate_hash text not null, -- Hash or unique identifier from the blockchain
-    issuing_institution_id text, -- References a new 'institutions' table (explained later)
+    issuing_institution_id text references institutions, -- References a new 'institutions' table (explained later)
     issue_date timestamp with time zone not null,
     metadata jsonb -- For other relevant details (course name, grades, etc. if desired)
     certificate_type_id text references certificate_types, -- References a new 'certificate_types' table

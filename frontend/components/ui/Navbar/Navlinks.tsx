@@ -37,7 +37,7 @@ export default function Navlinks({ user }: NavlinksProps) {
                             variant={"link"}
                             className="px-0 py-0 mt-1 text-foreground"
                         >
-                            {user && user.user_metadata.organization ? "Issue Certificates" : "View Certificates"}
+                            {user ? user.user_metadata.organization ? "Issue Certificates" : "View Certificates": "" }
                         </Button>
                     </Link>
                     {/* <Link href="/validate" className={s.link}>
@@ -54,44 +54,36 @@ export default function Navlinks({ user }: NavlinksProps) {
                 {user ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Avatar className="scale-110 hover:cursor-pointer rounded-full border-2 border-primary/90">
-                                <AvatarImage
+                            <Avatar className="scale-110 hover:cursor-pointer rounded-full border-2 border-primary/90 text-xl grid bg-accent place-items-center">
+                                {/* <AvatarImage
                                     src={
                                         user.avatar_url ??
                                         "https://ui-avatars.com/api/?background=242428&color=fff&name=HS"
                                     }
                                     alt={user.full_name ?? "User name"}
-                                />
-                                <AvatarFallback>
-                                    {user.full_name ?? "HS"}
-                                </AvatarFallback>
+                                /> */}
+                                {user.user_metadata.full_name[0]}
+                                {/* <AvatarFallback></AvatarFallback> */}
                             </Avatar>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56 mr-8">
                             <DropdownMenuLabel>Settings</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <Link href={"/account"}>
-                                <DropdownMenuItem
-                                >
-                                    Account
-                                </DropdownMenuItem>
+                                <DropdownMenuItem>Account</DropdownMenuItem>
                             </Link>
                             {user.user_metadata.organization && (
                                 <Link
                                     className="hover:cursor-pointer"
                                     href={"/dashboard"}
                                 >
-                                    <DropdownMenuItem
-                                    >
+                                    <DropdownMenuItem>
                                         Dashboard
                                     </DropdownMenuItem>
                                 </Link>
                             )}
                             <Link href={"/"}>
-                                <DropdownMenuItem
-                                >
-                                    Home
-                                </DropdownMenuItem>
+                                <DropdownMenuItem>Home</DropdownMenuItem>
                             </Link>
                             <DropdownMenuSeparator />
 
@@ -100,9 +92,7 @@ export default function Navlinks({ user }: NavlinksProps) {
                                     handleRequest(e, SignOut, router)
                                 }
                             >
-                                <DropdownMenuItem
-                                    className="focus:bg-inherit"
-                                >
+                                <DropdownMenuItem className="focus:bg-inherit">
                                     <Button
                                         className="ml-auto w-full hover:bg-primary/20"
                                         variant={"secondary"}
