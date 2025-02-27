@@ -90,7 +90,7 @@ export default function Footer() {
                     <div className="flex items-center h-10 space-x-6">
                         <a
                             aria-label="Github Repository"
-                            href="https://github.com/harjjotsinghh/CredChain"
+                            href="https://github.com/kenny-ai/CertChain"
                         >
                             <GitHub />
                         </a>
