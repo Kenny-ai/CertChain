@@ -1,9 +1,7 @@
 
-# CredChain: Decentralized Credentials Verification
-  
-<img src="https://raw.githubusercontent.com/HarjjotSinghh/CredChain/master/frontend/public/logo.png" align="center" width="70%"/>
+# CertChain: Decentralized Credentials Verification
 
-CredChain revolutionizes credential and certificates verification using blockchain technology.  Yes, Our platform securely stores and verifies credentials, creating an immutable and trustless system that eliminates the risk of frauds in certificates.
+CertChain revolutionizes credential and certificates verification using blockchain technology.  Yes, Our platform securely stores and verifies credentials, creating an immutable and trustless system that eliminates the risk of frauds in certificates.
 
 ## Problem Statement
 
