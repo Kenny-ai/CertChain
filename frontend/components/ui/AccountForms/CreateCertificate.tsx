@@ -12,25 +12,15 @@ import {
     FormMessage
 } from "@/components/ui/form";
 import Input from "../input";
-import React, {
-    ChangeEvent,
-    ReactNode,
-    use,
-    useEffect,
-    useRef,
-    useState
-} from "react";
+import React, { useEffect, useState } from "react";
 import { Tables } from "@/types_db";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import NotConnected from "./NotConnected";
 import { createClient } from "@/utils/supabase/client";
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { sha256 } from "js-sha256";
-import { InputTags } from "../multiple-inputs";
-import { MultiSelect } from "../multi-select";
 import MultipleSelector, { Option } from "../multiple-selector";
-import { getStatusRedirect } from "@/utils/helpers";
-import { ToastContainer, ToastContentProps, toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 
 interface CustomOption extends Option {
     id: string;
@@ -80,7 +70,6 @@ export default function CreateCertificate({
     const aptos = new Aptos(aptosConfig);
     const [users, setUsers] = useState<Tables<"users">[] | null>(null);
     const [userInput, setUserInput] = useState<string>("");
-    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
     useEffect(() => {
         const getUsers = async () => {
@@ -147,14 +136,33 @@ export default function CreateCertificate({
         getUsers();
     }, [userInput]);
 
-    const onSignAndSubmitTransaction = async (hashedCertificate: string) => {
+    const onSignAndSubmitTransaction = async (
+        certificateId: string,
+        hashedCertificate: string
+    ) => {
+        // Validate certId
+        if (typeof certificateId !== "string" || !certificateId) {
+            throw new Error("certId must be a non-empty string");
+        }
+        console.log(
+            "certId:",
+            certificateId,
+            "typeof certId:",
+            typeof certificateId
+        );
+        console.log(
+            "certificate_data:",
+            `Hashed certificate: ${hashedCertificate}`
+        );
+
         try {
             const response = await signAndSubmitTransaction({
                 sender: account?.address,
                 data: {
                     function:
-                        "0x885a7d4b5b123ff86e3a853439bb11b1ac888b1ee7b403dc845c8bf62e6dd174::issue_certificate::issue_certificate",
+                        "0x7be6c2e59ec67eb7b22f1f9cc4b608e31daaf21a1c68c5269d7ebbb9433c201e::issue_certificate::issue_certificate",
                     functionArguments: [
+                        certificateId,
                         `Hashed certificate: ${hashedCertificate}`
                     ]
                 }
@@ -179,47 +187,45 @@ export default function CreateCertificate({
             setLoading(true);
             const certificateData = generateCertificate(form.getValues());
             const certificateHash = sha256(certificateData);
-            await onSignAndSubmitTransaction(certificateHash).then(
-                async (txn) => {
-                    const { error } = await supabase
-                        .from("certificates")
-                        .insert({
-                            ...values,
-                            id: String(crypto.randomUUID()),
-                            title: values.title,
-                            user_ids: values.user_ids.map((user) => user.id),
-                            matric_numbers: values.user_ids.map(
-                                (user) => user.value
-                            ),
-                            certificate_hash: certificateHash,
-                            txn_id: txn.hash,
-                            graduation_year: values.graduation_year,
-                            issuing_institution_name:
-                                user.user_metadata.full_name
-                        });
-                    if (error) {
-                        throw error;
-                    }
+            const certificateId = String(crypto.randomUUID());
 
-                    toast.success(
-                        `A certificate of ${values.title} has been successfully issued to ${values.user_ids[0].label.split("|")[1]}, ${values.user_ids[0].value}`,
-                        {
-                            className: "w-[400px] border border-purple-600/40",
-                            theme: "dark"
-                        }
-                    );
-
-                    console.log({
-                        id: crypto.randomUUID(),
-                        title: values.title,
-                        user_ids: values.user_ids.map((user) => user.id),
-                        certificate_hash: certificateHash,
-                        txn_id: txn.hash
-                    });
-
-                    form.reset();
+            await onSignAndSubmitTransaction(
+                certificateId,
+                certificateHash
+            ).then(async (txn) => {
+                const { error } = await supabase.from("certificates").insert({
+                    ...values,
+                    id: certificateId,
+                    title: values.title,
+                    user_ids: values.user_ids.map((user) => user.id),
+                    matric_numbers: values.user_ids.map((user) => user.value),
+                    certificate_hash: certificateHash,
+                    txn_id: txn.hash,
+                    graduation_year: values.graduation_year,
+                    issuing_institution_name: user.user_metadata.full_name
+                });
+                if (error) {
+                    throw error;
                 }
-            );
+
+                toast.success(
+                    `A certificate of ${values.title} has been successfully issued to ${values.user_ids[0].label.split("|")[1]}, ${values.user_ids[0].value}`,
+                    {
+                        className: "w-[400px] border border-purple-600/40",
+                        theme: "dark"
+                    }
+                );
+
+                console.log({
+                    id: certificateId,
+                    title: values.title,
+                    user_ids: values.user_ids.map((user) => user.id),
+                    certificate_hash: certificateHash,
+                    txn_id: txn.hash
+                });
+
+                form.reset();
+            });
         } catch (error) {
             console.error("Error submitting certificate form:", error);
         } finally {

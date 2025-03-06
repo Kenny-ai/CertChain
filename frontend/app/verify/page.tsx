@@ -1,19 +1,14 @@
 "use client";
+import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 
 import { Button } from "@/components/ui/button";
 import { Tables } from "@/types_db";
 import { createClient } from "@/utils/supabase/client";
-import { AptosClient, HexString, Types } from "aptos";
 import React, { useState } from "react";
 
 export default function Verify() {
     const supabase = createClient();
 
-    const accountAddress =
-        "0x885a7d4b5b123ff86e3a853439bb11b1ac888b1ee7b403dc845c8bf62e6dd174";
-    // const certificateData =
-    //     "Hashed certificate: b8afc3eedae75c1d47266ddf965012f6fcc697c2fb8d51da36a1122ff09bdfe8";
-    const network = "https://fullnode.testnet.aptoslabs.com/v1";
     const [certificateHash, setCertificateHash] = useState("");
     const [showStudentData, setShowStudentData] = useState(false);
 
@@ -28,43 +23,64 @@ export default function Verify() {
         setCertificateHash(e.target.value);
     };
 
-    const verifyCertificate = async (e: React.FormEvent) => {
+    const aptosConfig = new AptosConfig({ network: Network.TESTNET });
+    const aptos = new Aptos(aptosConfig);
+
+    async function verifyCertificate(e: React.FormEvent) {
         e.preventDefault();
         setVerifying(true);
         setErrorOccured("");
         setShowStudentData(false);
 
-        const certificateData = `Hashed certificate: ${certificateHash}`;
-
-        const client = new AptosClient(network);
-        const account = new HexString(accountAddress);
-        const resourceType = `${accountAddress}::issue_certificate::CertificateHolder`;
-
         try {
-            const resource = await client.getAccountResource(
-                account,
-                resourceType
-            );
-            console.log({ certificateHash, certificateData });
-            if ((resource.data as any).certificate_data === certificateData) {
-                const { data: certificateData, error } = await supabase
-                    .from("certificates")
-                    .select()
-                    .eq("certificate_hash", `${certificateHash}`);
+            // Fetch certificate details from Supabase
+            const { data, error } = await supabase
+                .from("certificates")
+                .select("certificate_hash, id")
+                .eq("certificate_hash", certificateHash);
+            if (error) throw error;
 
-                if (error) {
+            const certificateId = data[0].id;
+            const address =
+                "0x7be6c2e59ec67eb7b22f1f9cc4b608e31daaf21a1c68c5269d7ebbb9433c201e";
+
+            // Verify on-chain state
+            const certificateData = await aptos.view({
+                payload: {
+                    function:
+                        "0x7be6c2e59ec67eb7b22f1f9cc4b608e31daaf21a1c68c5269d7ebbb9433c201e::issue_certificate::get_certificate",
+                    functionArguments: [address, certificateId]
+                }
+            });
+            const onChainData = certificateData[0];
+            const isValidOnChain =
+                onChainData === `Hashed certificate: ${certificateHash}`;
+
+            // Return verification result
+            const isVerified = isValidOnChain;
+            console.log("Certificate verified:", isVerified);
+            console.log("On-chain data:", onChainData);
+            setVerifying(false);
+            if (isVerified) {
+                const { data: certificateDBData, error: certificateDataError } =
+                    await supabase
+                        .from("certificates")
+                        .select()
+                        .eq("certificate_hash", `${certificateHash}`);
+
+                if (certificateDataError) {
                     console.error(
                         "Error fetching certificates:",
-                        error.message
+                        certificateDataError?.message
                     );
                     setErrorOccured(`An error occured. Please try again`);
                     return;
                 }
 
-                if (certificateData) {
-                    setCertificate(certificateData[0]);
+                if (certificateDBData) {
+                    setCertificate(certificateDBData![0]);
                     const matric_number =
-                        certificateData[0].matric_numbers![0];
+                        certificateDBData![0].matric_numbers![0];
 
                     const { data: userData, error: userDataError } =
                         await supabase
@@ -72,58 +88,34 @@ export default function Verify() {
                             .select()
                             .eq("matric_number", `${matric_number}`);
 
+                    if (userDataError) {
+                        console.error(
+                            "Error fetching user:",
+                            userDataError?.message
+                        );
+                        setErrorOccured(`An error occured. Please try again`);
+                        return;
+                    }
+
                     if (userData) {
                         setUser(userData[0]);
                         console.log(userData);
                         setShowStudentData(true);
                     }
                 }
-
-                console.log("Certificate resource found and data matches.");
-            } else {
-                setErrorOccured(
-                    `Certificate resource found, but data does not match`
-                );
-                console.log(
-                    "Certificate resource found, but data does not match."
-                );
             }
+
+            return isVerified;
         } catch (error) {
+            console.error("Verification failed:", error);
             setErrorOccured("Certificate resource not found!");
-            console.log("Certificate resource not found.");
+            setVerifying(false);
+            return false;
         }
-        setVerifying(false);
+    }
 
-        // try {
-        //     const events = await client.getEventsByEventHandle(
-        //         account,
-        //         resourceType,
-        //         "certificate_issued_events" //This will depend on how you name your event handle in your move module.
-        //     );
-        //     const foundEvent = events.find(
-        //         (event: any) =>
-        //             event.data.certificate_data === certificateData
-        //     );
-        //     if (foundEvent) {
-        //         console.log("Certificate event found and data matches.");
-        //     } else {
-        //         console.log(
-        //             "Certificate event not found or data does not match."
-        //         );
-        //     }
-        // } catch (error) {
-        //     console.log("Error querying events.");
-        // }
-    };
-
-    // Example usage:
-
-    // verifyCertificate(accountAddress, certificateData, network);
-    // verifyCertificate();
-
-    return (
+     return (
         <section className="mb-32 ">
-            {/* <SuccessModal /> */}
             <div className="py-8 flex lg:justify-center lg:items-center justify-start items-start sm:pt-24 px-8">
                 <div className="max-w-4xl mb-2">
                     <h1 className="lg:text-6xl w-fit font-extrabold text-5xl">

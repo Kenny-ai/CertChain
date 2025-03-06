@@ -40,6 +40,14 @@ export default function Navlinks({ user }: NavlinksProps) {
                             {user ? user.user_metadata.organization ? "Issue Certificates" : "View Certificates": "" }
                         </Button>
                     </Link>
+                    <Link href="/verify" className={s.link}>
+                        <Button
+                            variant={"link"}
+                            className="px-0 py-0 mt-1 text-foreground"
+                        >
+                            {"Verify Certificates"}
+                        </Button>
+                    </Link>
                     {/* <Link href="/validate" className={s.link}>
                         <Button
                             variant={"link"}
